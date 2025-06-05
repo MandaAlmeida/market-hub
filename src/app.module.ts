@@ -9,6 +9,8 @@ import { Orders } from './entity/orders.entity';
 import { Pay } from './entity/pay.entity';
 import { Reviews } from './entity/reviews.entity';
 import { UserModule } from './module/user.module';
+import { AdsModule } from './module/ads.module';
+import { OrdersModule } from './module/orders.module';
 
 @Module({
   imports: [
@@ -29,7 +31,9 @@ import { UserModule } from './module/user.module';
 
     TypeOrmModule.forFeature([User, Ads, ItensOrder, Orders, Pay, Reviews]),
 
-    UserModule
+    UserModule,
+    AdsModule,
+    OrdersModule
   ],
   controllers: [],
   providers: [],

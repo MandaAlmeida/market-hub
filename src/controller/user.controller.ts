@@ -3,10 +3,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from 'src/auth/current-user-decorator';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CreateUserDTO, LoginUserDTO, UpdateUserDTO } from 'src/models/user.dto';
-
-
 import { UserService } from 'src/service/user.service';
-
 
 @Controller('user')
 export class UserController {

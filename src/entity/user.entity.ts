@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 import { UserType } from './enum/userType.enum';
 import { Ads } from './ads.entity';
 import { Orders } from './orders.entity';
@@ -15,7 +15,7 @@ export class User {
     @Column({ unique: true })
     email: string;
 
-    @Column({ nullable: true })
+    @Column({ nullable: true, select: false })
     password: string;
 
     @Column({ nullable: true })
