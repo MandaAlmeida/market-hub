@@ -12,5 +12,7 @@ import { AdsController } from 'src/controller/ads.controller';
     ],
     controllers: [AdsController],
     providers: [AdsService],
+    exports: [AdsService]
+
 })
 export class AdsModule { }

@@ -19,8 +19,8 @@ export class Orders {
     })
     status: OrderStatusType
 
-    @Column()
-    priceTotal: string
+    @Column('decimal', { precision: 10, scale: 2 })
+    priceTotal: number
 
     @OneToMany(() => ItensOrder, itensOrder => itensOrder.order, { cascade: true })
     itensOrder: ItensOrder[];

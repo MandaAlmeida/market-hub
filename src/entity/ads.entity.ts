@@ -1,6 +1,7 @@
 import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { User } from "./user.entity";
 import { ItensOrder } from "./ItensOrder.entity";
+import { Category } from "./category.entity";
 
 @Entity()
 export class Ads {
@@ -11,22 +12,22 @@ export class Ads {
     user: User;
 
     @Column()
-    title: string
+    title: string;
 
     @Column()
-    description: string
+    description: string;
 
     @Column()
-    price: string
+    price: string;
+
+    @ManyToOne(() => Category, category => category.ads, { onDelete: 'CASCADE' })
+    category: Category;
 
     @Column()
-    categorie: string
+    stock: string;
 
     @Column()
-    stock: string
-
-    @Column()
-    active: boolean
+    active: boolean;
 
     @OneToMany(() => ItensOrder, itensOrder => itensOrder.ads, { cascade: true })
     itensOrder: ItensOrder[];
@@ -35,5 +36,5 @@ export class Ads {
     createdAt: Date;
 
     @UpdateDateColumn()
-    updatedAt: Date;;
+    updatedAt: Date;
 }

@@ -11,6 +11,8 @@ import { Reviews } from './entity/reviews.entity';
 import { UserModule } from './module/user.module';
 import { AdsModule } from './module/ads.module';
 import { OrdersModule } from './module/orders.module';
+import { Category } from './entity/category.entity';
+import { ItensOrderModule } from './module/itensOrder.module';
 
 @Module({
   imports: [
@@ -23,7 +25,7 @@ import { OrdersModule } from './module/orders.module';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      entities: [User, Ads, ItensOrder, Orders, Pay, Reviews],
+      entities: [User, Ads, ItensOrder, Orders, Pay, Reviews, Category],
       synchronize: false,
       logging: true,
       ssl: { rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED === 'true' }
@@ -33,7 +35,8 @@ import { OrdersModule } from './module/orders.module';
 
     UserModule,
     AdsModule,
-    OrdersModule
+    OrdersModule,
+    ItensOrderModule
   ],
   controllers: [],
   providers: [],

@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable } from "@nestjs/common";
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Ads } from "src/entity/ads.entity";
 import { CreateAdsDTO, UpdateAdsDTO } from "src/models/ads.dto";
@@ -12,23 +12,20 @@ export class AdsService {
     ) { }
 
     async createAds(user: { sub: string }, ads: CreateAdsDTO) {
-        const { title, description, categorie, price, stock } = ads;
+        const { title, description, category, price, stock } = ads;
 
         const existAds = await this.checkSimilarAd(ads);
 
-        if (existAds === 'identical') {
-            throw new BadRequestException('Você já criou um anúncio idêntico.');
-        }
+        if (existAds === 'identical') throw new BadRequestException('Você já criou um anúncio idêntico.');
 
-        if (existAds === 'similar') {
-            console.warn('Aviso: Você já tem um anúncio parecido. Tem certeza que quer criar outro?');
-        }
+        if (existAds === 'similar') console.warn('Aviso: Você já tem um anúncio parecido. Tem certeza que quer criar outro?');
+
 
         const newAds = {
             user: { id: user.sub },
             title,
             description,
-            categorie,
+            category: { id: category },
             price,
             stock,
             active: true
@@ -44,13 +41,13 @@ export class AdsService {
         return ads;
     }
 
-    async findAll(categorie?: string, page: number = 1, limit: number = 10) {
+    async findAll(category?: string, page: number = 1, limit: number = 10) {
         const queryBuilder = this.adsRepository.createQueryBuilder('ads');
 
         queryBuilder.where('ads.active = :active', { active: true });
 
-        if (categorie) {
-            queryBuilder.andWhere('ads.categorie = :categorie', { categorie });
+        if (category) {
+            queryBuilder.andWhere('ads.category = :category', { category });
         }
 
         const [items, total] = await queryBuilder
@@ -68,7 +65,7 @@ export class AdsService {
     }
 
     async updateAds(id: string, user: { sub: string }, ads: UpdateAdsDTO) {
-        const { title, description, categorie, stock, price, active } = ads;
+        const { title, description, category, stock, price, active } = ads;
 
         const existAds = await this.checkExistAds(id);
 
@@ -77,7 +74,7 @@ export class AdsService {
         const newAds = {
             title,
             description,
-            categorie,
+            category: { id: category },
             stock,
             price,
             active
@@ -97,17 +94,17 @@ export class AdsService {
             relations: ['itensOrder'],
         });
 
-        if (!existAds) throw new BadRequestException("Anúncio não encontrado")
+        if (!existAds) throw new NotFoundException("Anúncio não encontrado")
 
         return await this.adsRepository.remove(existAds);
     }
 
     private async checkSimilarAd(ads: CreateAdsDTO): Promise<'identical' | 'similar' | null> {
-        const { title, description, categorie, price } = ads;
+        const { title, description, category, price } = ads;
 
         // Verifica se existe um anúncio idêntico
         const identicalAd = await this.adsRepository.findOne({
-            where: { title, description, categorie, price },
+            where: { title, description, price, category: { id: category } },
         });
 
         if (identicalAd) {
@@ -116,7 +113,7 @@ export class AdsService {
 
         // Verifica se existe um anúncio parecido (mesmo título e categoria)
         const similarAd = await this.adsRepository.findOne({
-            where: { title, categorie },
+            where: { title, category: { id: category } },
         });
 
         if (similarAd) {
@@ -126,13 +123,13 @@ export class AdsService {
         return null;
     }
 
-    private async checkExistAds(id: string) {
+    async checkExistAds(id: string) {
         const ads = await this.adsRepository.findOne({
             where: { id },
-            relations: ['user']
+            relations: ['user', "category"]
         })
 
-        if (!ads) throw new BadRequestException("Anúncio não encontrado")
+        if (!ads) throw new NotFoundException("Anúncio não encontrado")
 
         return ads
     }

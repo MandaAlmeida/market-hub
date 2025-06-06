@@ -7,10 +7,13 @@ import { OrdersController } from 'src/controller/orders.controller';
 
 
 @Module({
-    imports: [AuthModule,
+    imports: [
+        AuthModule,
         TypeOrmModule.forFeature([Orders])
     ],
     controllers: [OrdersController],
     providers: [OrdersService],
+    exports: [OrdersService]
+
 })
 export class OrdersModule { }

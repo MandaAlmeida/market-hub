@@ -1,10 +1,23 @@
-import { IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { IsArray, IsInt, IsNotEmpty, IsOptional, IsString, Min } from "class-validator";
 import { OrderStatusType } from "src/entity/enum/orderStatus.enum";
+
+class NewItemDTO {
+    @IsString()
+    adsId: string;
+
+    @IsInt()
+    @Min(1)
+    quantify: number;
+
+    @IsInt()
+    @Min(1)
+    unitPrice: number;
+}
 
 export class CreateOrdersDTO {
     @IsNotEmpty()
-    @IsString()
-    priceTotal: string;
+    @IsArray()
+    itensOrder: NewItemDTO[]
 }
 
 export class UpdateOrdersDTO {
@@ -15,4 +28,8 @@ export class UpdateOrdersDTO {
     @IsOptional()
     @IsString()
     priceTotal: string;
+
+    @IsOptional()
+    @IsArray()
+    itensOrder: NewItemDTO[]
 }

@@ -10,8 +10,8 @@ export class OrdersController {
     constructor(private readonly ordersService: OrdersService) { }
 
     @Post()
-    async createOrders(@CurrentUser() user: { sub: string }, @Body() orders: CreateOrdersDTO) {
-        return this.ordersService.createOrders(user, orders);
+    async createOrders(@CurrentUser() user: { sub: string }) {
+        return this.ordersService.createOrders(user);
     }
 
     @Get(":id")
@@ -24,14 +24,14 @@ export class OrdersController {
         return this.ordersService.findAll(page, limit);
     }
 
-    // @Put(":id")
-    // async updateOrders(@Param("id") id: string, @CurrentUser() user: { sub: string }, @Body() orders: UpdateOrdersDTO) {
-    //     return this.ordersService.updateOrders(id, user, orders)
-    // }
+    @Put(":id")
+    async updateOrders(@Param("id") id: string, @CurrentUser() user: { sub: string }, @Body() priceTotalChange: number) {
+        return this.ordersService.updateOrders(id, user, priceTotalChange)
+    }
 
-    // @Delete(":id")
-    // async removeOrders(@Param("id") id: string) {
-    //     return this.ordersService.removeOrders(id)
-    // }
+    @Delete(":id")
+    async removeOrders(@Param("id") id: string) {
+        return this.ordersService.removeOrders(id)
+    }
 
 }

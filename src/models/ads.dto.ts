@@ -15,7 +15,7 @@ export class CreateAdsDTO {
 
     @IsNotEmpty()
     @IsString()
-    categorie: string;
+    category: string;
 
     @IsNotEmpty()
     @IsString()
@@ -37,7 +37,7 @@ export class UpdateAdsDTO {
 
     @IsOptional()
     @IsString()
-    categorie: string;
+    category: string;
 
     @IsOptional()
     @IsString()
