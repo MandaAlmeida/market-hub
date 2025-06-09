@@ -171,7 +171,11 @@ export class UserService {
   }
 
   private async checkUser(email: string) {
-    const user = await this.userRepository.findOne({ where: { email } });
+    const user = await this.userRepository.findOne({
+      where: { email },
+      select: ['id', 'email', 'password', 'type']
+    });
     return user;
   }
+
 }

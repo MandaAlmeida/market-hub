@@ -11,7 +11,7 @@ export class Pay {
     @ManyToOne(() => Orders, order => order.pay, { onDelete: 'CASCADE' })
     order: Orders;
 
-    @Column()
+    @Column('decimal', { precision: 10, scale: 2 })
     price: number
 
     @Column()

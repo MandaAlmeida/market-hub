@@ -63,9 +63,7 @@ export class ItensOrderService {
             case OrderStatusType.SENT:
                 const ads = await this.adsService.checkExistAds(itemOrder.ads.id);
 
-                if (ads.user.id !== user.sub) {
-                    throw new ForbiddenException('Você não tem permissão para alterar o status para SENT.');
-                }
+                if (ads.user.id !== user.sub) throw new ForbiddenException('Você não tem permissão para alterar o status para SENT.');
 
                 itemOrder.status = OrderStatusType.SENT;
                 break;

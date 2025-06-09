@@ -13,6 +13,8 @@ import { AdsModule } from './module/ads.module';
 import { OrdersModule } from './module/orders.module';
 import { Category } from './entity/category.entity';
 import { ItensOrderModule } from './module/itensOrder.module';
+import { PayModule } from './module/pay.module';
+import { CategoryModule } from './module/category.module';
 
 @Module({
   imports: [
@@ -31,12 +33,14 @@ import { ItensOrderModule } from './module/itensOrder.module';
       ssl: { rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED === 'true' }
     }),
 
-    TypeOrmModule.forFeature([User, Ads, ItensOrder, Orders, Pay, Reviews]),
+    TypeOrmModule.forFeature([User, Ads, ItensOrder, Orders, Pay, Reviews, Category]),
 
     UserModule,
     AdsModule,
     OrdersModule,
-    ItensOrderModule
+    ItensOrderModule,
+    PayModule,
+    CategoryModule
   ],
   controllers: [],
   providers: [],
