@@ -3,16 +3,18 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Ads } from "src/entity/ads.entity";
 import { CreateAdsDTO, UpdateAdsDTO } from "src/models/ads.dto";
 import { Repository } from "typeorm";
+import { CategoryService } from "./category.service";
 
 @Injectable()
 export class AdsService {
     constructor(
         @InjectRepository(Ads)
-        private adsRepository: Repository<Ads>
+        private adsRepository: Repository<Ads>,
+        private categoryService: CategoryService
     ) { }
 
     async createAds(user: { sub: string }, ads: CreateAdsDTO) {
-        const { title, description, category, price, stock } = ads;
+        const { title, description, subCategory, price, stock } = ads;
 
         const existAds = await this.checkSimilarAd(ads);
 
@@ -20,12 +22,13 @@ export class AdsService {
 
         if (existAds === 'similar') console.warn('Aviso: Você já tem um anúncio parecido. Tem certeza que quer criar outro?');
 
+        const existCategory = await this.categoryService.fetchCategory(subCategory);
 
         const newAds = {
             user: { id: user.sub },
             title,
             description,
-            category: { id: category },
+            subCategory: existCategory,
             price,
             stock,
             active: true
@@ -41,13 +44,13 @@ export class AdsService {
         return ads;
     }
 
-    async findAll(category?: string, page: number = 1, limit: number = 10) {
+    async findAll(subCategory?: string, page: number = 1, limit: number = 10) {
         const queryBuilder = this.adsRepository.createQueryBuilder('ads');
 
         queryBuilder.where('ads.active = :active', { active: true });
 
-        if (category) {
-            queryBuilder.andWhere('ads.category = :category', { category });
+        if (subCategory) {
+            queryBuilder.andWhere('ads.subCategory = :subCategory', { subCategory });
         }
 
         const [items, total] = await queryBuilder
@@ -65,16 +68,18 @@ export class AdsService {
     }
 
     async updateAds(id: string, user: { sub: string }, ads: UpdateAdsDTO) {
-        const { title, description, category, stock, price, active } = ads;
+        const { title, description, subCategory, stock, price, active } = ads;
 
         const existAds = await this.checkExistAds(id);
 
         if (existAds.user.id !== user.sub) throw new ForbiddenException('Você não tem permissão para atualizar este anúncio');
 
+        const existCategory = await this.categoryService.fetchCategory(subCategory);
+
         const newAds = {
             title,
             description,
-            category: { id: category },
+            subCategory: existCategory,
             stock,
             price,
             active
@@ -100,11 +105,11 @@ export class AdsService {
     }
 
     private async checkSimilarAd(ads: CreateAdsDTO): Promise<'identical' | 'similar' | null> {
-        const { title, description, category, price } = ads;
+        const { title, description, subCategory, price } = ads;
 
         // Verifica se existe um anúncio idêntico
         const identicalAd = await this.adsRepository.findOne({
-            where: { title, description, price, category: { id: category } },
+            where: { title, description, price, subCategory: { id: subCategory } },
         });
 
         if (identicalAd) {
@@ -113,7 +118,7 @@ export class AdsService {
 
         // Verifica se existe um anúncio parecido (mesmo título e categoria)
         const similarAd = await this.adsRepository.findOne({
-            where: { title, category: { id: category } },
+            where: { title, subCategory: { id: subCategory } },
         });
 
         if (similarAd) {
@@ -126,7 +131,7 @@ export class AdsService {
     async checkExistAds(id: string) {
         const ads = await this.adsRepository.findOne({
             where: { id },
-            relations: ['user', "category"]
+            relations: ['user', "subCategory"]
         })
 
         if (!ads) throw new NotFoundException("Anúncio não encontrado")

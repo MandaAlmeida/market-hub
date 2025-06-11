@@ -1,9 +1,11 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from "@nestjs/common";
+import { ApiBearerAuth, ApiQuery } from "@nestjs/swagger";
 import { CurrentUser } from "src/auth/current-user-decorator";
 import { JwtAuthGuard } from "src/auth/jwt-auth.guard";
 import { OrdersService } from "src/service/orders.service";
 
 @Controller("orders")
+@ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard)
 export class OrdersController {
     constructor(private readonly ordersService: OrdersService) { }
@@ -19,6 +21,8 @@ export class OrdersController {
     }
 
     @Get()
+    @ApiQuery({ name: 'p', required: false, description: 'Número da página', type: Number })
+    @ApiQuery({ name: 'l', required: false, description: 'Limite de pedidos por página', type: Number })
     async findAllOrders(@Query("p") page?: number, @Query("l") limit?: number) {
         return this.ordersService.findAll(page, limit);
     }

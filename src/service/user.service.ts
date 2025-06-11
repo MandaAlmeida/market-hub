@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 
 import { compare, hash } from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
@@ -19,6 +19,8 @@ export class UserService {
   // Criação de um novo usuário
   async create(createUserDto: CreateUserDTO) {
     const { name, email, address, type, password, passwordConfirmation } = createUserDto;
+
+    if (type && type.toUpperCase() === "ADMIN") throw new ConflictException("Você não tem permissão para criar usuario do tipo ADMIN.");
 
     // Verifica se já existe usuário com o mesmo email
     const existUser = await this.checkUser(email);
@@ -133,9 +135,9 @@ export class UserService {
 
     const existUser = await this.userRepository.findOne({ where: { id: userId.sub } });
 
-    if (!existUser) {
-      throw new ConflictException("Usuário não encontrado");
-    }
+    if (!existUser) throw new ConflictException("Usuário não encontrado");
+
+    if (type && type.toUpperCase() === "ADMIN") throw new ConflictException("Você não tem permissão para alterar o tipo para ADMIN.");
 
     const updateData: Partial<User> = {
       name,
@@ -165,7 +167,7 @@ export class UserService {
       relations: ['ads', 'orders', 'reviews'],
     });
 
-    if (!existUser) throw new ConflictException("Usuário não encontrado");
+    if (!existUser) throw new NotFoundException("Usuário não encontrado");
 
     await this.userRepository.remove(existUser);
   }

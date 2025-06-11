@@ -25,26 +25,45 @@ export class ItensOrderService {
         for (const item of itensOrder) {
             const ads = await this.adsService.checkExistAds(item.adsId);
 
-            const itemTotal = item.unitPrice * item.quantify;
+            const itemTotal = ads.price * item.quantify;
             priceTotal += itemTotal;
 
-            const newItem = this.itensOrderRepository.create({
-                order,
-                ads,
-                status: OrderStatusType.PENDING,
-                quantify: item.quantify,
-                unitPrice: item.unitPrice,
+            // Verifica se já existe item com mesmo anúncio para a mesma ordem
+            const existingItem = await this.itensOrderRepository.findOne({
+                where: {
+                    order: { id: order.id },
+                    ads: { id: item.adsId }
+                },
+                relations: ['ads', 'order']
             });
 
-            const savedItem = await this.itensOrderRepository.save(newItem);
-            itens.push(savedItem);
+            if (existingItem) {
+                // Atualiza quantidade e unitPrice
+                existingItem.quantify += item.quantify;
+                existingItem.unitPrice = ads.price;
+
+                const updatedItem = await this.itensOrderRepository.save(existingItem);
+                itens.push(updatedItem);
+            } else {
+                // Cria novo item
+                const newItem = this.itensOrderRepository.create({
+                    order,
+                    ads,
+                    status: OrderStatusType.PENDING,
+                    quantify: item.quantify,
+                    unitPrice: ads.price,
+                });
+
+                const savedItem = await this.itensOrderRepository.save(newItem);
+                itens.push(savedItem);
+            }
         }
 
-
-        const updatedOrder = await this.orderService.updateOrders(order.id, user, priceTotal)
+        const updatedOrder = await this.orderService.updateOrders(order.id, user, priceTotal);
 
         return {
-            order: updatedOrder
+            order: updatedOrder,
+            itens,
         };
     }
 

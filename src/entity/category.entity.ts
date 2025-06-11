@@ -1,5 +1,5 @@
-import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { Ads } from "./ads.entity";
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { SubCategory } from "./subcategory.entity";
 
 @Entity()
 export class Category {
@@ -15,8 +15,8 @@ export class Category {
     @Column()
     active: boolean;
 
-    @OneToMany(() => Ads, ads => ads.category, { cascade: true })
-    ads: Ads[];
+    @OneToMany(() => SubCategory, SubCategory => SubCategory.category, { cascade: true })
+    subCategory: SubCategory[];
 
     @CreateDateColumn()
     createdAt: Date;

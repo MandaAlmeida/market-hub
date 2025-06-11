@@ -9,6 +9,7 @@ import { Orders } from "./entity/orders.entity";
 import { Pay } from "./entity/pay.entity";
 import { Reviews } from "./entity/reviews.entity";
 import { Category } from "./entity/category.entity";
+import { SubCategory } from "./entity/subcategory.entity";
 
 export const AppDataSource = new DataSource({
     type: 'postgres',
@@ -17,9 +18,9 @@ export const AppDataSource = new DataSource({
     username: process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    entities: [User, Ads, ItensOrder, Orders, Pay, Reviews, Category],
+    entities: [User, Ads, ItensOrder, Orders, Pay, Reviews, Category, SubCategory],
     synchronize: false,
-    logging: true,
+    logging: false,
     ssl: { rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED === 'true' },
     migrations: ['src/migration/*.ts']
 });

@@ -2,7 +2,7 @@ import { BadRequestException, ForbiddenException, Injectable, InternalServerErro
 import { InjectDataSource, InjectRepository } from "@nestjs/typeorm";
 import { Pay } from "src/entity/pay.entity";
 import { CreatePayDTO } from "src/models/pay.dto";
-import { EntityManager, In, Repository } from "typeorm";
+import { In, Repository } from "typeorm";
 import { OrdersService } from "./orders.service";
 import { PayStatusType } from "src/entity/enum/payStatus.enum";
 import { DataSource } from 'typeorm';
@@ -42,9 +42,14 @@ export class PayService {
         return this.payRepository.save(newPay)
     }
 
-    async verifyPaymentWithTransaction(payId: string) {
+    async verifyPaymentWithTransaction(user: { sub: string }, payId: string) {
+        const payment = await this.checkExistPay(payId);
+
+        if (payment.order.user.id !== user.sub) throw new ForbiddenException("Você não tem permissão para alterar esse pedido");
+
+        if (payment.status === PayStatusType.CONFIRMED) throw new BadRequestException("Pagamento já foi confirmado.");
+
         return await this.dataSource.transaction(async (manager) => {
-            const payment = await this.checkExistPay(manager, payId)
             const isSuccess = Math.random() < 0.7;
 
             if (isSuccess) {
@@ -56,7 +61,10 @@ export class PayService {
 
                 for (const item of payment.order.itensOrder) {
                     item.status = OrderStatusType.PAID;
+                    item.ads.stock = item.ads.stock - item.quantify
+
                     await manager.save(item);
+                    await manager.save(item.ads)
                 }
             } else {
                 payment.status = PayStatusType.FAILED;
@@ -70,12 +78,15 @@ export class PayService {
         })
     }
 
-    async cancelPaymentWithTransaction(payId: string) {
+    async cancelPaymentWithTransaction(user: { sub: string }, payId: string) {
+        const payment = await this.checkExistPay(payId);
+
+        if (payment.order.user.id !== user.sub) throw new ForbiddenException("Você não tem permissão para alterar esse pedido");
+
+
+        if (payment.status === PayStatusType.CANCELLED) throw new BadRequestException("Pagamento já foi cancelado.");
+
         return await this.dataSource.transaction(async (manager) => {
-            const payment = await this.checkExistPay(manager, payId);
-
-            if (payment.status === PayStatusType.CANCELLED) throw new BadRequestException("Pagamento já foi cancelado.");
-
             if (payment.status === PayStatusType.CONFIRMED && payment.order.status !== OrderStatusType.SENT) {
                 payment.status = PayStatusType.CANCELLED;
                 await manager.save(payment);
@@ -85,7 +96,10 @@ export class PayService {
 
                 for (const item of payment.order.itensOrder) {
                     item.status = OrderStatusType.CANCELLED;
+                    item.ads.stock = item.ads.stock + item.quantify
+
                     await manager.save(item);
+                    await manager.save(item.ads)
                 }
 
                 return {
@@ -117,10 +131,10 @@ export class PayService {
         return payments;
     }
 
-    async checkExistPay(manager: EntityManager, payId: string) {
-        const payment = await manager.findOne(Pay, {
+    async checkExistPay(payId: string) {
+        const payment = await this.payRepository.findOne({
             where: { id: payId },
-            relations: ['order', 'order.itensOrder', 'order.user']
+            relations: ['order', 'order.itensOrder', 'order.user', 'order.itensOrder.ads']
         });
 
         if (!payment) throw new NotFoundException("Pagamento não encontrado");

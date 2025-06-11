@@ -15,6 +15,9 @@ import { Category } from './entity/category.entity';
 import { ItensOrderModule } from './module/itensOrder.module';
 import { PayModule } from './module/pay.module';
 import { CategoryModule } from './module/category.module';
+import { SubCategory } from './entity/subcategory.entity';
+import { SubCategoryModule } from './module/subCategory.module';
+import { UploadModule } from './module/upload.module';
 
 @Module({
   imports: [
@@ -27,20 +30,22 @@ import { CategoryModule } from './module/category.module';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      entities: [User, Ads, ItensOrder, Orders, Pay, Reviews, Category],
+      entities: [User, Ads, ItensOrder, Orders, Pay, Reviews, Category, SubCategory],
       synchronize: false,
-      logging: true,
+      logging: ['error'],
       ssl: { rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED === 'true' }
     }),
 
-    TypeOrmModule.forFeature([User, Ads, ItensOrder, Orders, Pay, Reviews, Category]),
+    TypeOrmModule.forFeature([User, Ads, ItensOrder, Orders, Pay, Reviews, Category, SubCategory]),
 
     UserModule,
     AdsModule,
     OrdersModule,
     ItensOrderModule,
     PayModule,
-    CategoryModule
+    CategoryModule,
+    SubCategoryModule,
+    UploadModule
   ],
   controllers: [],
   providers: [],

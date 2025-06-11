@@ -1,7 +1,7 @@
 import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { User } from "./user.entity";
 import { ItensOrder } from "./ItensOrder.entity";
-import { Category } from "./category.entity";
+import { SubCategory } from "./subcategory.entity";
 
 @Entity()
 export class Ads {
@@ -17,14 +17,14 @@ export class Ads {
     @Column()
     description: string;
 
-    @Column()
-    price: string;
+    @Column('decimal', { precision: 10, scale: 2 })
+    price: number;
 
-    @ManyToOne(() => Category, category => category.ads, { onDelete: 'CASCADE' })
-    category: Category;
+    @ManyToOne(() => SubCategory, subCategory => subCategory.ads, { onDelete: 'CASCADE' })
+    subCategory: SubCategory;
 
-    @Column()
-    stock: string;
+    @Column({ type: 'integer', default: 0 })
+    stock: number;
 
     @Column()
     active: boolean;

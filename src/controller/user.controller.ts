@@ -1,5 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, Res } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { ApiBearerAuth } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/current-user-decorator';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CreateUserDTO, LoginUserDTO, UpdateUserDTO } from 'src/models/user.dto';
@@ -16,10 +17,12 @@ export class UserController {
 
   @Get('google')
   @UseGuards(AuthGuard('google'))
+  @ApiBearerAuth('access-token')
   async googleAuth(@Req() req) { }
 
   @Get('google/redirect')
   @UseGuards(AuthGuard('google'))
+  @ApiBearerAuth('access-token')
   async googleAuthRedirect(@Req() req: any) {
     const userProfile = req.user as { email: string; name: string };
 
@@ -33,6 +36,7 @@ export class UserController {
 
   @Post('register-oauth')
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
   async registerOAuthUser(@Body() user: CreateUserDTO) {
     return this.userService.finishregisterOAuthUser(user);
   }
@@ -44,18 +48,21 @@ export class UserController {
 
   @Get()
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
   findOne(@CurrentUser() user: { sub: string }) {
     return this.userService.findOne(user);
   }
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
   update(@CurrentUser() user: { sub: string }, @Body() updateUserDto: UpdateUserDTO) {
     return this.userService.updateUser(user, updateUserDto);
   }
 
   @Delete()
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
   remove(@CurrentUser() user: { sub: string }) {
     return this.userService.removeUser(user);
   }
