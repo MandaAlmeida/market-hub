@@ -20,36 +20,35 @@ export class ItensOrderService {
         const itens: ItensOrder[] = [];
         let priceTotal = 0;
 
-        console.log(itensOrder)
         const order = await this.orderService.createOrders(user);
 
         for (const item of itensOrder) {
             const ads = await this.adsService.checkExistAds(item.adsId);
-            console.log(item.adsId, ads.id)
+
+            const existingItem = await this.itensOrderRepository.findOne({
+                where: {
+                    order: { id: order.id },
+                    ads: { id: ads.id },
+                },
+                relations: ['ads', 'order'],
+            });
+
+            const currentQuantify = existingItem ? existingItem.quantify : 0;
+            const requestedTotal = currentQuantify + item.quantify;
+
+            if (ads.stock < requestedTotal) throw new BadRequestException(`Estoque insuficiente para o produto "${ads.title}". Disponível: ${ads.stock}, Solicitado: ${requestedTotal}`);
+
 
             const itemTotal = ads.price * item.quantify;
             priceTotal += itemTotal;
 
-            // Verifica se já existe item com mesmo anúncio para a mesma ordem
-            const existingItem = await this.itensOrderRepository.findOne({
-                where: {
-                    order: { id: order.id },
-                    ads: { id: ads.id }
-                },
-                relations: ['ads', 'order']
-            });
-
-            console.log(existingItem)
-
             if (existingItem) {
-                // Atualiza quantidade e unitPrice
                 existingItem.quantify += item.quantify;
                 existingItem.unitPrice = ads.price;
 
                 const updatedItem = await this.itensOrderRepository.save(existingItem);
                 itens.push(updatedItem);
             } else {
-                // Cria novo item
                 const newItem = this.itensOrderRepository.create({
                     order,
                     ads,
@@ -70,6 +69,7 @@ export class ItensOrderService {
             itens,
         };
     }
+
 
     async findOne(id: string) {
         return await this.checkExistItem(id)
@@ -137,7 +137,6 @@ export class ItensOrderService {
 
         return { message: 'Itens removidos com sucesso' };
     }
-
 
     private async checkExistItem(id: string) {
         const itensOrder = await this.itensOrderRepository.findOne({

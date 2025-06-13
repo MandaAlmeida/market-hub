@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import api from '../api';
 import Cart from '../components/card';
 import { ShoppingCartSimpleIcon } from '@phosphor-icons/react';
+import AdImageSlider from '../components/sliderImage';
 
 interface SubCategory {
     id: string;
@@ -25,6 +26,7 @@ export type Ads = {
     price: string;
     stock: number;
     active: boolean;
+    outOfStock: boolean;
     image: Image[];
     subCategory: SubCategory;
     user: User;
@@ -57,7 +59,7 @@ export type Order = {
     id: string;
     user: User;
     status: string;
-    priceTotal: string;
+    priceTotal: number;
     itensOrder: ItemOrder[];
     pay: any[]; // como no seu exemplo está vazio, pode deixar any[] ou criar tipo específico se souber
     createdAt: string;
@@ -76,7 +78,7 @@ const Marketplace = () => {
     const [totalPages, setTotalPages] = useState(1);
     const [cart, setCart] = useState<Order[]>([]);
     const [openCart, setOpenCart] = useState(false);
-    const [seller, setSeller] = useState(false)
+    const [seller, setSeller] = useState(false);
     const token = localStorage.getItem('token');
     const navigate = useNavigate();
 
@@ -91,6 +93,11 @@ const Marketplace = () => {
             });
             setAds(res.data.data);
             setTotalPages(res.data.totalPages);
+            if (res.data.warnings && res.data.warnings.length > 0) {
+                res.data.warnings.forEach((msg: string) => {
+                    alert(msg);
+                });
+            }
         } catch (err) {
             console.error('Erro ao carregar anúncios', err);
         }
@@ -121,6 +128,7 @@ const Marketplace = () => {
 
     useEffect(() => {
         fetchAds();
+
     }, [fetchAds]);
 
     useEffect(() => {
@@ -133,7 +141,17 @@ const Marketplace = () => {
 
     useEffect(() => {
         user();
-    }, [user])
+    }, [user]);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            fetchCart();
+            fetchAds();
+        }, 10000);
+
+        return () => clearInterval(interval);
+    }, []);
+
 
     // Função para adicionar item no carrinho, chamando backend
     const handleSaveItem = async (ad: Ads) => {
@@ -155,8 +173,10 @@ const Marketplace = () => {
 
             fetchCart();
             alert(`Item "${ad.title}" salvo no carrinho!`);
-        } catch (error) {
-            alert('Erro ao salvar item no carrinho');
+        } catch (error: any) {
+            const errorMessage =
+                error?.response?.data?.message || 'Erro ao adicionar item no carrinho.';
+            alert(errorMessage);
             console.error(error);
         }
     };
@@ -178,8 +198,10 @@ const Marketplace = () => {
             })
             fetchCart();
             alert('Item removido do carrinho');
-        } catch (error) {
-            alert('Erro ao remover item do carrinho');
+        } catch (error: any) {
+            const errorMessage =
+                error?.response?.data?.message || 'Erro ao remover item do carrinho';
+            alert(errorMessage);
             console.error(error);
         }
     };
@@ -227,13 +249,13 @@ const Marketplace = () => {
                         key={ad.id}
                         className="border rounded-lg p-4 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white flex flex-col h-[500px] max-w-80"
                     >
-                        {ad.image[0] && (
+                        {ad.image.length <= 1 ? (
                             <img
                                 src={getImageUrl(ad.image[0].url)}
                                 alt={ad.title}
                                 className="h-48 w-full object-cover rounded-md mb-4"
                             />
-                        )}
+                        ) : <AdImageSlider ads={ad} getImageUrl={getImageUrl} />}
                         <h2 className="text-xl font-semibold mb-2 line-clamp-2">{ad.title}</h2>
                         <p className="text-gray-700 text-sm mb-2 line-clamp-3">{ad.description}</p>
 
@@ -241,15 +263,18 @@ const Marketplace = () => {
                             <p className="text-sm text-gray-500 mb-1">
                                 <span className="font-semibold">Categoria:</span> {ad.subCategory.name}
                             </p>
-                            <p className="text-sm text-gray-500 mb-3">
+                            <p className="text-sm text-gray-500 mb-1">
                                 <span className="font-semibold">Vendedor:</span> {ad.user.name}
                             </p>
-                            <button
+                            <p className="text-sm text-gray-500 mb-3">
+                                <span className="font-semibold">Preço:</span> {ad.price}
+                            </p>
+                            {ad.stock <= 0 ? <p className="warning flex-1 text-center">⚠ Produto esgotado</p> : <button
                                 onClick={() => handleSaveItem(ad)}
                                 className="w-full bg-blue-950 text-white rounded py-2 hover:bg-blue-900 transition-colors cursor-pointer "
                             >
                                 Salvar para Comprar
-                            </button>
+                            </button>}
                         </div>
                     </div>
                 ))}

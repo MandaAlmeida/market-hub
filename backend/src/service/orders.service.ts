@@ -1,6 +1,8 @@
 import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { OrderStatusType } from "src/entity/enum/orderStatus.enum";
+import { PayStatusType } from "src/entity/enum/payStatus.enum";
+import { ItensOrder } from "src/entity/ItensOrder.entity";
 import { Orders } from "src/entity/orders.entity";
 import { Repository } from "typeorm";
 
@@ -9,6 +11,8 @@ export class OrdersService {
     constructor(
         @InjectRepository(Orders)
         private ordersRepository: Repository<Orders>,
+        @InjectRepository(ItensOrder)
+        private itensOrderRepository: Repository<ItensOrder>
     ) { }
 
     async createOrders(user: { sub: string }) {
@@ -31,27 +35,66 @@ export class OrdersService {
         return this.ordersRepository.save(newOrders);
     }
 
-
     async findOne(id: string) {
         const orders = this.checkExistOrders(id)
 
         return orders;
     }
 
-    async findAll(page: number = 1, limit: number = 10) {
-        const [data, total] = await this.ordersRepository
+    async findAll(user: { sub: string }, page: number = 1, limit: number = 10) {
+        const warnings: string[] = [];
+        const [orders, total] = await this.ordersRepository
             .createQueryBuilder('order')
             .leftJoinAndSelect('order.user', 'user')
             .leftJoinAndSelect('order.itensOrder', 'itemOrder')
             .leftJoinAndSelect('itemOrder.ads', 'ads')
             .leftJoinAndSelect('ads.image', 'image')
             .leftJoinAndSelect('order.pay', 'pay')
+            .where('user.id = :userId', { userId: user.sub })
             .skip((page - 1) * limit)
             .take(limit)
             .getManyAndCount();
 
+        for (const order of orders) {
+            // Se a ordem tiver pagamento confirmado, pule a atualização
+            const hasConfirmedPayment = order.pay?.some(p => p.status === PayStatusType.CONFIRMED);
+            if (hasConfirmedPayment) continue;
+
+            let newTotal = 0;
+
+            for (const item of order.itensOrder) {
+                if (item.ads.stock <= 0 && item.status === OrderStatusType.PENDING) {
+                    item.status = OrderStatusType.ZERO_STOCK;
+                    await this.itensOrderRepository.save(item);
+                    warnings.push(`Item ${item.ads.title} foi removido do carrinho por falta de estoque.`);
+                }
+
+                if (item.ads.stock > 0 && item.status === OrderStatusType.ZERO_STOCK) {
+                    item.status = OrderStatusType.PENDING;
+                    await this.itensOrderRepository.save(item);
+                } else if (item.quantify > item.ads.stock) {
+                    item.quantify = item.ads.stock;
+                    item.status = OrderStatusType.PENDING;
+                    await this.itensOrderRepository.save(item);
+                    warnings.push(`A quantidade do item ${item.ads.title} foi reduzida para ${item.ads.stock} por falta de estoque.`);
+                }
+
+                if (item.status === OrderStatusType.PENDING) {
+                    newTotal += item.unitPrice * item.quantify;
+                }
+            }
+
+            const oldTotal = order.priceTotal || 0;
+            const diff = newTotal - oldTotal;
+
+            if (diff !== 0) {
+                await this.updateOrders(order.id, user, diff);
+            }
+        }
+
         return {
-            data,
+            data: orders,
+            warnings,
             total,
             page,
             limit,
@@ -100,7 +143,6 @@ export class OrdersService {
         return this.ordersRepository.save(order);
     }
 
-
     async removeOrders(id: string) {
         const existOrders = await this.ordersRepository.findOne({
             where: { id },
@@ -124,7 +166,7 @@ export class OrdersService {
     private async checkExistOrders(id: string) {
         const orders = await this.ordersRepository.findOne({
             where: { id },
-            relations: ['user', 'pay']
+            relations: ['user', 'pay', 'itensOrder', 'itensOrder.ads']
         })
 
         if (!orders) throw new NotFoundException("Pedido não encontrado")

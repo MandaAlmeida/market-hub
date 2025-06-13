@@ -34,7 +34,7 @@ export class UserController {
       name: userProfile.name,
     });
 
-    res.redirect(`${this.configService.get('URL_FRONTEND')}/?token=${result.token}`);
+    res.redirect(`${this.configService.get('URL_FRONTEND')}/auth/callback?token=${result.token}`);
   }
 
   @Post('register-oauth')

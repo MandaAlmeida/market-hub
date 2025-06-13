@@ -7,6 +7,8 @@ import { OrdersService } from "./orders.service";
 import { PayStatusType } from "src/entity/enum/payStatus.enum";
 import { DataSource } from 'typeorm';
 import { OrderStatusType } from "src/entity/enum/orderStatus.enum";
+import { Ads } from "src/entity/ads.entity";
+import { ItensOrder } from "src/entity/ItensOrder.entity";
 
 @Injectable()
 export class PayService {
@@ -21,8 +23,40 @@ export class PayService {
     async createPay(user: { sub: string }, pay: CreatePayDTO, orderId: string) {
         const order = await this.orderService.findOne(orderId);
 
-        if (order.user.id !== user.sub) throw new ForbiddenException("Você não tem permissão para alterar esse pedido");
+        if (order.user.id !== user.sub) {
+            throw new ForbiddenException("Você não tem permissão para alterar esse pedido");
+        }
 
+        const queryRunner = this.dataSource.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
+
+        // Atualiza status dos itens com estoque insuficiente
+        for (const item of order.itensOrder) {
+            const ads = await queryRunner.manager.findOne(Ads, {
+                where: { id: item.ads.id },
+                relations: ['user', 'subCategory', 'image']
+            });
+
+            if (!ads) throw new NotFoundException("Anúncio não encontrado");
+
+            if (ads.stock < item.quantify && item.status === OrderStatusType.PENDING) {
+                await queryRunner.manager.update(ItensOrder, { id: item.id }, {
+                    status: OrderStatusType.ZERO_STOCK
+                });
+                item.status = OrderStatusType.ZERO_STOCK;
+            }
+        }
+
+        // Verifica se há itens sem estoque suficiente
+        const hasZeroStockItem = order.itensOrder.some(item => item.status === OrderStatusType.ZERO_STOCK);
+        if (hasZeroStockItem) {
+            await queryRunner.rollbackTransaction();
+            await queryRunner.release();
+            throw new BadRequestException("Não é possível criar pagamento: existem itens sem estoque suficiente no pedido.");
+        }
+
+        // Verifica pagamento ativo
         const existingPay = await this.payRepository.findOne({
             where: {
                 order: { id: order.id },
@@ -30,17 +64,28 @@ export class PayService {
             }
         });
 
-        if (existingPay) throw new BadRequestException("Já existe um pagamento ativo para este pedido.");
+        if (existingPay) {
+            await queryRunner.rollbackTransaction();
+            await queryRunner.release();
+            throw new BadRequestException("Já existe um pagamento ativo para este pedido.");
+        }
 
         const newPay = {
             order: order,
             price: order.priceTotal,
             payMethod: pay.payMethod,
             status: PayStatusType.PENDING
-        }
+        };
 
-        return this.payRepository.save(newPay)
+        const savedPay = await this.payRepository.save(newPay);
+
+        await queryRunner.commitTransaction();
+        await queryRunner.release();
+
+        return savedPay;
     }
+
+
 
     async verifyPaymentWithTransaction(user: { sub: string }, payId: string) {
         const payment = await this.checkExistPay(payId);

@@ -23,8 +23,8 @@ export class OrdersController {
     @Get()
     @ApiQuery({ name: 'p', required: false, description: 'Número da página', type: Number })
     @ApiQuery({ name: 'l', required: false, description: 'Limite de pedidos por página', type: Number })
-    async findAllOrders(@Query("p") page?: number, @Query("l") limit?: number) {
-        return this.ordersService.findAll(page, limit);
+    async findAllOrders(@CurrentUser() user: { sub: string }, @Query("p") page?: number, @Query("l") limit?: number) {
+        return this.ordersService.findAll(user, page, limit);
     }
 
     @Put(":id")

@@ -29,9 +29,9 @@ const Cart = ({ cart, removeFromCart, increaseQuantity, decreaseQuantity, getIma
 
             {cart
                 .filter(order => order.status === "PENDING")
-                .map(({ id: orderId, itensOrder }) => (
-                    <div key={orderId}>
-                        {itensOrder.map(({ ads, quantify }) => (
+                .map((order) => (
+                    <div key={order.id}>
+                        {order.itensOrder.map(({ ads, quantify }) => (
                             <div
                                 key={ads.id}
                                 className="flex items-center mb-4 border-b pb-3 last:border-b-0"
@@ -41,28 +41,33 @@ const Cart = ({ cart, removeFromCart, increaseQuantity, decreaseQuantity, getIma
                                     alt={ads.title}
                                     className="w-16 h-16 object-cover rounded mr-4"
                                 />
-                                <div className="flex-grow">
+                                {ads.stock <= 0 ? <p className="warning flex-1 text-center">⚠ Produto esgotado</p> : <div className="flex-grow">
                                     <h4 className="font-semibold">{ads.title}</h4>
                                     <div className="flex items-center gap-2 mt-1">
-                                        <button
-                                            onClick={() => decreaseQuantity(orderId, ads.id, 1)}
+                                        {quantify > 0 && <button
+                                            onClick={() => decreaseQuantity(order.id, ads.id, 1)}
                                             className="bg-gray-200 px-2 rounded hover:bg-gray-300 cursor-pointer"
                                             aria-label={`Diminuir quantidade de ${ads.title}`}
                                         >
                                             -
-                                        </button>
+                                        </button>}
                                         <span className="text-sm text-gray-600">{quantify}</span>
-                                        <button
+                                        {ads.stock > quantify && <button
                                             onClick={() => increaseQuantity(ads)}
                                             className="bg-gray-200 px-2 rounded hover:bg-gray-300 cursor-pointer"
                                             aria-label={`Aumentar quantidade de ${ads.title}`}
                                         >
                                             +
-                                        </button>
+                                        </button>}
                                     </div>
-                                </div>
+                                    <p className="text-sm text-gray-500 mb-3">
+                                        <span className="font-semibold">Preço: </span>R$ {ads.price}
+                                    </p>
+                                </div>}
+
+
                                 <button
-                                    onClick={() => removeFromCart(orderId, ads.id, quantify)}
+                                    onClick={() => removeFromCart(order.id, ads.id, quantify)}
                                     className="text-red-600 hover:text-red-800 font-semibold ml-4 cursor-pointer"
                                     aria-label={`Remover ${ads.title} do carrinho`}
                                 >
@@ -71,13 +76,16 @@ const Cart = ({ cart, removeFromCart, increaseQuantity, decreaseQuantity, getIma
                             </div>
                         ))}
 
-                        <div className="flex justify-end mt-6">
-                            <button
-                                onClick={() => handleCheckout(orderId)}
+                        <div className="flex justify-between items-center mt-6">
+                            <p className="text-2xl text-gray-800 mb-3">
+                                <span className="font-bold">Preço: </span>R$ {order.priceTotal}
+                            </p>
+                            {order.priceTotal !== 0.00 && <button
+                                onClick={() => handleCheckout(order.id)}
                                 className="bg-blue-950 text-white py-3 px-6 rounded hover:bg-blue-900 transition cursor-pointer"
                             >
                                 Finalizar Pedido
-                            </button>
+                            </button>}
                         </div>
                     </div>
                 ))}

@@ -56,7 +56,6 @@ export class AdsService {
     }
 
     async findAll(subCategory?: string, page: number = 1, limit: number = 10) {
-        console.log(subCategory)
         const queryBuilder = this.adsRepository.createQueryBuilder('ads');
 
         queryBuilder
@@ -147,12 +146,15 @@ export class AdsService {
     async checkExistAds(id: string) {
         const ads = await this.adsRepository.findOne({
             where: { id },
-            relations: ['user', "subCategory", "image"]
-        })
+            relations: ['user', 'subCategory', 'image']
+        });
 
-        if (!ads) throw new NotFoundException("Anúncio não encontrado")
+        if (!ads) throw new NotFoundException("Anúncio não encontrado");
 
-        return ads
+        if (ads.stock <= 0) throw new BadRequestException("Este anúncio está sem estoque");
+
+        return ads;
     }
+
 
 }
