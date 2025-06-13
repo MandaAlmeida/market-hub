@@ -190,7 +190,7 @@ const Marketplace = () => {
         }
 
         try {
-            await api.delete(`http://localhost:3333/itensOrder/removeItem/${orderId}`, {
+            await api.delete(`/itensOrder/removeItem/${orderId}`, {
                 data: {
                     adsId: adId,
                     quantify: quantify,
