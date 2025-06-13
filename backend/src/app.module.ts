@@ -33,7 +33,10 @@ import { Image } from './entity/image.entity';
       entities: [User, Ads, ItensOrder, Orders, Pay, Category, SubCategory, Image],
       synchronize: false,
       logging: ['error'],
-      ssl: { rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED === 'true' }
+      ssl: {
+        rejectUnauthorized: false,
+      }
+
     }),
 
     TypeOrmModule.forFeature([User, Ads, ItensOrder, Orders, Pay, Category, SubCategory, Image]),
