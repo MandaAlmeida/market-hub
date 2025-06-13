@@ -1,26 +1,18 @@
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api';
 
 const CompleteOAuthInfo = () => {
     const navigate = useNavigate();
-    const email = localStorage.getItem('email');
-    const token = localStorage.getItem('token');
 
     const handleSubmit = async (e: any) => {
         e.preventDefault();
         const form = e.target;
         try {
-            const res = await axios.post(
-                'http://localhost:3333/user/register-oauth',
+            const res = await api.post(
+                '/user/register-oauth',
                 {
-                    email,
                     address: form.address.value,
                     type: form.type.value,
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
                 }
             );
             localStorage.setItem('token', res.data.token);

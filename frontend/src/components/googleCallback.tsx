@@ -12,7 +12,7 @@ export default function GoogleCallback() {
 
         if (token) {
             localStorage.setItem('token', token);
-            navigate('/'); // ou vá para o dashboard, por exemplo
+            navigate('/complete-register'); // ou vá para o dashboard, por exemplo
         } else {
             navigate('/login'); // se algo der errado
         }

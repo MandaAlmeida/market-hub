@@ -8,6 +8,7 @@ import { PrivateRoute } from './PrivateRoute';
 import PaymentPage from './pages/payment';
 import CreateAdPage from './pages/createAd';
 import GoogleCallback from './components/googleCallback';
+import CompleteOAuthInfo from './pages/completeOAuthInfo';
 
 function App() {
   return (
@@ -16,6 +17,8 @@ function App() {
         <Route path="/auth/callback" element={<GoogleCallback />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/complete-register" element={<CompleteOAuthInfo />} />
+
         <Route path="/" element={<Marketplace />} />
 
 

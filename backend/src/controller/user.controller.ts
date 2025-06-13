@@ -40,8 +40,8 @@ export class UserController {
   @Post('register-oauth')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('access-token')
-  async registerOAuthUser(@Body() user: CreateUserDTO) {
-    return this.userService.finishregisterOAuthUser(user);
+  async registerOAuthUser(@CurrentUser() userId: { sub: string }, @Body() user: CreateUserDTO) {
+    return this.userService.finishregisterOAuthUser(userId, user);
   }
 
   @Post("login")

@@ -23,7 +23,7 @@ export class UserService {
     if (type && type.toUpperCase() === "ADMIN") throw new ConflictException("Você não tem permissão para criar usuario do tipo ADMIN.");
 
     // Verifica se já existe usuário com o mesmo email
-    const existUser = await this.checkUser(email);
+    const existUser = await this.checkUserEmail(email);
     if (existUser) throw new ConflictException("Esse usuario já existe");
 
     // Verifica se as senhas coincidem
@@ -49,7 +49,7 @@ export class UserService {
   // Login via OAuth (Google, etc.)
   async oauthLogin(profile: { email: string; name: string }) {
     // Verifica se o usuário já existe
-    const existUser = await this.checkUser(profile.email);
+    const existUser = await this.checkUserEmail(profile.email);
 
     if (!existUser) {
       // Cria novo usuário caso não exista
@@ -72,11 +72,11 @@ export class UserService {
   }
 
   // Finaliza o registro de um usuário autenticado via OAuth
-  async finishregisterOAuthUser(user: CreateUserDTO) {
-    const { email, address, type } = user;
+  async finishregisterOAuthUser(userId: { sub: string }, user: CreateUserDTO) {
+    const { address, type } = user;
 
     // Busca usuário pelo email
-    const existUser = await this.checkUser(email);
+    const existUser = await this.checkUserId(userId.sub);
 
     const newUser = {
       address,
@@ -99,7 +99,7 @@ export class UserService {
     const { email, password } = user;
 
     // Busca usuário pelo email
-    const existUser = await this.checkUser(email);
+    const existUser = await this.checkUserEmail(email);
     if (!existUser || !existUser.password) throw new UnauthorizedException("Senha ou email incorretos");
 
     // Compara senhas
@@ -172,9 +172,17 @@ export class UserService {
     await this.userRepository.remove(existUser);
   }
 
-  private async checkUser(email: string) {
+  private async checkUserEmail(email: string) {
     const user = await this.userRepository.findOne({
       where: { email },
+      select: ['id', 'email', 'password', 'type']
+    });
+    return user;
+  }
+
+  private async checkUserId(userId: string) {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
       select: ['id', 'email', 'password', 'type']
     });
     return user;
