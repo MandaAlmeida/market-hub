@@ -39,7 +39,6 @@ export class AdsController {
             },
         },
     })
-
     async createAds(
         @CurrentUser() user: { sub: string },
         @Body(new ValidationPipe({ transform: true })) ads: CreateAdsDTO,

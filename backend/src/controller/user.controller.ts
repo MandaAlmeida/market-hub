@@ -34,7 +34,11 @@ export class UserController {
       name: userProfile.name,
     });
 
-    res.redirect(`${this.configService.get('URL_FRONTEND')}/auth/callback?token=${result.token}`);
+    const url = new URL(`${this.configService.get('URL_FRONTEND')}/auth/callback`);
+    url.searchParams.append('token', result.token);
+    url.searchParams.append('isNewUser', String(result.newUser));
+
+    return res.redirect(url.toString());
   }
 
   @Post('register-oauth')

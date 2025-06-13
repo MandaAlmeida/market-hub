@@ -1,98 +1,166 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+# 🏬 Market‑Hub Backend
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Servidor da aplicação de marketplace de múltiplos vendedores, desenvolvido com **Node.js**, **Express** e **PostgreSQL**.
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 🔍 Descrição
 
-## Project setup
+Backend da aplicação **Market‑Hub**, responsável por:
 
-```bash
-$ npm install
-```
+- Gerenciamento de produtos, estoques, categorias e imagens  
+- Autenticação de usuários  
+- CRUD completo de usuários e pedidos  
+- Controle de estoque durante transações  
+- Integração com o front-end via API RESTful
 
-## Compile and run the project
+---
 
-```bash
-# development
-$ npm run start
+## 🚀 Tecnologias
 
-# watch mode
-$ npm run start:dev
+- Node.js + Express  
+- PostgreSQL com ORM  
+- JWT para autenticação  
+- Bcrypt para hashing de senhas  
+- Multer para upload de imagens  
+- Dotenv, Cors e outros middlewares úteis
 
-# production mode
-$ npm run start:prod
-```
+---
 
-## Run tests
+## ⚙️ Pré-requisitos
+
+- Node.js v16+  
+- PostgreSQL local ou em nuvem  
+- Git
+
+---
+
+## 📥 Instalação
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+git clone https://github.com/MandaAlmeida/market-hub.git
+cd market-hub/backend
+npm install
+cp .env.sample .env
 ```
 
-## Deployment
+### ✏️ Configure o arquivo `.env` com:
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+```env
+# Porta onde o backend será iniciado
+PORT=3333
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+# URL de conexão com o banco de dados PostgreSQL
+# Formato: postgres://usuario:senha@host:porta/nome_do_banco
+DATABASE_URL=postgres://admin:senha123@localhost:5432/market_hub
+
+# Google OAuth – credenciais da aplicação
+CLIENT_ID_GOOGLE=1234567890-abc123def456.apps.googleusercontent.com
+CLIENT_SECRET_GOOGLE=GOCSPX-exampleSecretKeyHere
+URL_GOOGLE=https://accounts.google.com/o/oauth2/v2/auth
+
+# URL do front-end para redirecionamentos (login, cadastro, etc.)
+URL_FRONTEND=https://market-hub-front.vercel.app
+
+# Cloudflare – ID da conta para gerenciamento de imagens (R2, Workers, etc.)
+CLOUDFLARE_ACCOUNT_ID=abcdef1234567890abcdef1234567890
+
+# URL pública base para exibir imagens armazenadas (em Cloudflare R2, por exemplo)
+URL_PUBLIC_GET_IMAGE=https://pub-abc123.r2.dev/
+
+# AWS S3 – informações para upload de imagens em bucket privado/público
+AWS_BUCKET_NAME=market-hub-images
+AWS_ACCESS_KEY_ID=AKIAXXXXXXXXXXXXXXXX
+AWS_SECRET_ACCESS_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# JWT – chaves RSA (use arquivos .pem ou variáveis de ambiente para tokens assinados)
+JWT_PRIVATE_KEY=-----BEGIN PRIVATE KEY-----
+MIICeAIBADANBgkqhkiG9w0BAQEFAASCAmIwggJeAgEAAoGBAMexampleKeyAqui...
+-----END PRIVATE KEY-----
+
+JWT_PUBLIC_KEY=-----BEGIN PUBLIC KEY-----
+MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDexampleKeyAqui...
+-----END PUBLIC KEY-----
+```
+
+---
+
+## 🏃 Execução
 
 ```bash
-$ npm install -g mau
-$ mau deploy
+npm run dev
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+O backend estará disponível em: [http://localhost:3333](http://localhost:3333)
 
-## Resources
+---
 
-Check out a few resources that may come in handy when working with NestJS:
+## 📡 Rotas da API
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+Rotas conforme os controllers em `src/controllers`:
 
-## Support
+### 📂 CategoryController (categoryController.ts)
+- `POST /category` – Criar uma nova categoria (somente ADMIN)
+- `GET /category` – Listar todas as categorias
+- `PUT /category/:id` – Atualizar categoria pelo ID
+- `DELETE /category/:id` – Remover categoria pelo ID (somente ADMIN)
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+### 📂 SubCategoryController (subCategoryController.ts)
+- `POST /subcategory` – Criar uma nova subcategoria (somente ADMIN)
+- `POST /subcategory/createSubCategories` – Criar múltiplas subcategorias em lote (somente ADMIN)
+- `GET /subcategory` – Listar todas as subcategorias
+- `PUT /subcategory/:id` – Atualizar subcategoria pelo ID
+- `DELETE /subcategory/:id` – Remover subcategoria pelo ID (somente ADMIN)
 
-## Stay in touch
+### 📦 ItensOrderController (itensOrderController.ts)
+- `POST /itensOrder` – Criar itens do pedido (envia lista de itens)
+- `GET /itensOrder/:id` – Buscar um item do pedido pelo ID
+- `PUT /itensOrder/:id` – Atualizar status de um item do pedido pelo ID
+- `DELETE /itensOrder/removeItem/:orderId` – Remover item(s) do pedido pelo ID do pedido (envia item no corpo)
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### 🧾 OrdersController (ordersController.ts)
+- `POST /orders` – Criar um novo pedido para o usuário autenticado
+- `GET /orders/:id` – Buscar pedido pelo ID
+- `GET /orders?p=number&l=number` – Listar todos os pedidos do usuário com paginação opcional (p=página, l=limite por página)
+- `PUT /orders/:id` – Atualizar o pedido pelo ID (ex: alterar valor total)
+- `DELETE /orders/:id` – Remover pedido pelo ID
 
-## License
+### 💳 PayController (payController.ts)
+- `POST /pay/:orderId` – Criar pagamento para o pedido informado
+- `POST /pay/:id/verify` – Verificar pagamento pela transação ID
+- `POST /pay/:id/cancel` – Cancelar pagamento pela transação ID
+- `GET /pay` – Listar todos os pagamentos do usuário autenticado
+- `GET /pay/:orderId` – Listar pagamento pelo ID do pedido
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+### 📁 UploadController (uploadController.ts)
+- `POST /uploads` – Upload de arquivo (usuário com papel SELLER)
+- `GET /uploads/:filename` – Obter URL pública para visualização do arquivo
+- `DELETE /uploads/:filename` – Deletar arquivo (usuário com papel SELLER)
+
+### 🧑 UserController (userController.ts)
+- `POST /user/register` – Registrar novo usuário
+- `GET /user/google` – Autenticação via Google OAuth (início do fluxo)
+- `GET /user/google/redirect` – Callback do Google OAuth com redirecionamento para frontend (retorna token e flag isNewUser)
+- `POST /user/register-oauth` – Completar registro de usuário OAuth (usuário autenticado)
+- `POST /user/login` – Login do usuário com email/senha
+- `GET /user` – Buscar dados do usuário autenticado
+- `PATCH /user/:id` – Atualizar dados do usuário autenticado
+- `DELETE /user` – Remover usuário autenticado
+---
+
+## ✅ Funcionalidades Implementadas
+
+- Controle de estoque atualizado automaticamente após compras  
+- Validação para impedir compra de mais itens do que o disponível  
+- Upload de imagens com `multer`  
+- Senhas protegidas com `bcrypt`  
+- Tokens JWT assinados com chaves RSA para segurança
+
+---
+
+## 📬 Contato
+
+Para dúvidas, sugestões ou contribuições, abra uma issue no repositório ou entre em contato pelo GitHub:
+
+[@MandaAlmeida](https://github.com/MandaAlmeida)

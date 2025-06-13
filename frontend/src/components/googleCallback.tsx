@@ -9,12 +9,19 @@ export default function GoogleCallback() {
     useEffect(() => {
         const params = new URLSearchParams(location.search);
         const token = params.get('token');
+        const isNewUser = params.get('isNewUser') === 'true';
+
+        console.log(params)
 
         if (token) {
             localStorage.setItem('token', token);
-            navigate('/complete-register'); // ou vá para o dashboard, por exemplo
+            if (isNewUser) {
+                navigate('/complete-register');
+            } else {
+                navigate('/');
+            }
         } else {
-            navigate('/login'); // se algo der errado
+            navigate('/login');
         }
     }, [location.search, navigate]);
 
