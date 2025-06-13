@@ -206,6 +206,8 @@ const Marketplace = () => {
         }
     };
 
+    console.log(ads)
+
     return (
         <div className="p-6 max-w-7xl mx-auto">
             <h1 className="text-4xl font-extrabold mb-6 text-center text-blue-950">Market-Hub</h1>
@@ -249,7 +251,7 @@ const Marketplace = () => {
                         key={ad.id}
                         className="border rounded-lg p-4 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white flex flex-col h-[500px] max-w-80"
                     >
-                        {ad.image.length <= 1 ? (
+                        {ad.image.length > 0 && ad.image.length <= 1 ? (
                             <img
                                 src={getImageUrl(ad.image[0].url)}
                                 alt={ad.title}
